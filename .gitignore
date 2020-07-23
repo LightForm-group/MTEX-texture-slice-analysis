@@ -1,0 +1,10 @@
+._.DS_Store
+.DS_Store
+._*
+*.fuse
+/Dilatometer/Analysis
+/Dilatometer/Data
+/Dilatometer/Example Analysis/D5/D5*
+/Dilatometer/Example Data/D5/Sample*
+/Hydrawedge
+/Servotest
