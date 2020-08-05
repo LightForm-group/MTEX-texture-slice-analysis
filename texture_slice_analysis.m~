@@ -48,7 +48,7 @@ fprintf('Note, the (x,y) origin on the map will have changed and x or y could be
 %% Plot the IPF colour map
 
 phase = 'alpha'
-visible = 'off'
+visible = 'on'
 outputFileName = strcat(analysis_path,sample_name,'_IPF_map_entire_region')
 IPF_map_plot(phase, ebsd, outputFileName, visible)
 
@@ -146,7 +146,7 @@ y_origin = y_left
 
 %% Slice the entire map or the cropped map
 
-num_strips = 20; % number of strips to cut the map into (resolution)
+num_strips = 10; % number of strips to cut the map into (resolution)
 
 % define the size of the EBSD map
 ebsd_grid = ebsd.gridify;
@@ -283,12 +283,12 @@ fname_FE_results = [pname FE_results_path]
 FE_model = importdata(fname_FE_results)
 
 % write the data to new arrays
-FE_distance = flip(FE_model.data(:,1)*1000)
-FE_temperature = flip(FE_model.data(:,2))
-FE_strain_radial = flip(FE_model.data(:,3))
-FE_strain_axial = flip(FE_model.data(:,4))
-FE_strain_equiv = flip(FE_model.data(:,5))
-FE_strain_rate = flip(FE_model.data(:,6))
+FE_distance = FE_model.data(:,1)
+FE_temperature = FE_model.data(:,2)
+FE_strain_radial = FE_model.data(:,3)
+FE_strain_axial = FE_model.data(:,4)
+FE_strain_equiv = FE_model.data(:,5)
+FE_strain_rate = FE_model.data(:,6)
 
 % create an array of points to plot the strips
 max_sample_length = 5.2
@@ -311,9 +311,9 @@ plot(strip_position,tilted_ND_volume_fraction*100,'Color',[0,1,0],'lineWidth',2)
 hold on
 plot(strip_position,TEXTURE_INDEX_strip,'Color',[1,1,0],'lineWidth',2); % ?
 hold on
-plot(strip_position,odf_strip_max/10,'Color',[0,1,1],'lineWidth',2); % ?
+plot(strip_position,odf_strip_max,'Color',[0,1,1],'lineWidth',2); % ?
 hold on
-plot(FE_distance,(((FE_temperature - max(FE_temperature))+(max(FE_temperature)-min(FE_temperature)))/10),'Color',[1,0,1],'lineWidth',2); % ?
+plot(FE_distance,FE_temperature/100,'Color',[1,0,1],'lineWidth',2); % ?
 hold on
 plot(FE_distance,FE_strain_radial,'Color',[0.5,0.5,0.5],'lineWidth',2); % ?
 hold on
@@ -323,7 +323,7 @@ plot(FE_distance,FE_strain_equiv,'Color',[0.75,0.5,0.25],'lineWidth',2); % ?
 hold on
 plot(FE_distance,FE_strain_rate*-10,'Color',[0.75,0.25,0.5],'lineWidth',2); % ?
 hold off
-legend('Basal ND','Tilted ND', 'Texture Index','ODF Maximum / 10', 'Temperature Difference / 10', 'Radial Strain', 'Axial Strain', 'Equivalent Strain', 'Strain Rate / 10')
+legend('Basal ND','Tilted ND', 'Tilted ND','Texture Index','ODF Maximum', 'Temperature', 'Radial Strain', 'Axial Strain', 'Equivalent Strain', 'Strain Rate')
 saveas (texture_variation_FE_results, strcat(analysis_path,sample_name,'_texture_variation_FE_results_',num2str(num_strips), '.bmp'));
 
 % vol_frac_line_figure = figure();
