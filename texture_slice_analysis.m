@@ -22,8 +22,8 @@ sample_name = 'D5' % edit this line to name of file
 ctf_file = '/SampleD5_repeat Data.ctf'
 data_path = strcat(mech_tester,data_file,sample_name,ctf_file)
 
-analysis_path = '/Example Analysis/'
-analysis_path = strcat(mech_tester,analysis_path,sample_name,'/') % path for saving the data
+analysis_folder = '/Example Analysis/'
+analysis_path = strcat(mech_tester,analysis_folder,sample_name,'/') % path for saving the data
 
 % which files to be imported
 fname = [pname data_path]
@@ -59,7 +59,7 @@ ori = ebsd('Ti-Hex').orientations
 contour_step = 0.1
 pf_max = 2.5
 outputFileName = strcat(analysis_path,sample_name,'_PF_entire_region')
-visible = 'on'
+visible = 'off'
 pole_figure_plot(phase, ori, CS, contour_step, pf_max, outputFileName, visible);
 
 %% Calculate an automatic halfwidth for the ODF 
@@ -209,11 +209,6 @@ end
 
 %% Analyse and plot the sliced data to see how the texture components change along the length
 
-% open a file to save the different texture strength values
-
-fileTS = fopen(fullfile(analysis_path, strcat(sample_name,'_texture_strength_',num2str(num_strips),'.txt')),'w');
-fprintf(fileTS, 'Strip Index\tTexture Index\tODF Max\tBasal ND Volume Fraction\tTilted ND Volume Fraction\n');
-
 % define the crystal system for the texture components
 cs = ebsd('Ti-Hex').CS;
 
@@ -249,8 +244,18 @@ for strip_index = 0:num_strips-1
     odf_strip = calcDensity(ori_strip,'kernel',psi);
     ODF_plot(phase, odf_strip, odf_max, outputFileName, specSym, visible)
      
-    [odf_strip_max(strip_index+1),ori_strip_max(strip_index+1)]= max(odf_strip)
+    % caclulate texture index
     TEXTURE_INDEX_strip(strip_index+1) = textureindex(odf_strip)
+    
+    % calculate strength of ODF maxima
+    [odf_strip_max(strip_index+1),ori_strip_max(strip_index+1)]= max(odf_strip)
+    
+    % calculate misorientation of ODF maxima wrt 0002 in CD
+    mori = (orientation.byEuler(0*degree,0*degree,0*degree,cs))*ori_strip_max
+    misorientation_ODF_max = angle(mori)/degree
+
+    % calculate PHI angle of ODF maxima
+    PHI=ori_strip_max.Phi
     
     % seperate the texture components and calculate the volume fractions
     total_volume = length(ebsd_cutmap) % calculate the total volume as the number of points in the map
@@ -265,98 +270,54 @@ for strip_index = 0:num_strips-1
     tilted_ND_volume = length(ebsd_tilted_ND);
     tilted_ND_volume_fraction(strip_index+1) = (tilted_ND_volume/total_volume)
     
+end
+
+%% Open and write to file to save the different texture strength values
+
+fileTS = fopen(fullfile(analysis_path, strcat(sample_name,'_texture_strength_',num2str(num_strips),'.txt')),'w');
+fprintf(fileTS, 'Strip Index\tTexture Index\tODF Max\tPHI Angle of ODF Max.\tMisorientation of ODF Max.\tBasal ND Volume Fraction\tTilted ND Volume Fraction\n');
+
+for strip_index = 0:num_strips-1    
     % write the texture strength values to file
-     fprintf(fileTS, '%f\t%f\t%f\t%f\t%f\n', strip_index, TEXTURE_INDEX_strip(strip_index+1), odf_strip_max(strip_index+1), basal_ND_volume_fraction(strip_index+1), tilted_ND_volume_fraction(strip_index+1))
+    fprintf(fileTS, '%f\t%f\t%f\t%f\t%f\t%f\t%f\n', strip_index, TEXTURE_INDEX_strip(strip_index+1), odf_strip_max(strip_index+1), PHI(strip_index+1), misorientation_ODF_max(strip_index+1), basal_ND_volume_fraction(strip_index+1), tilted_ND_volume_fraction(strip_index+1))
 end
 
-%% Close any open files
-
+% close any open files
 fclose(fileTS);
-
-%% Load FE model results
-
-% give the file name
-FE_results_file = '/FE Results D5.txt'
-FE_results_path = strcat(mech_tester,data_file,sample_name,FE_results_file)
-fname_FE_results = [pname FE_results_path]
-% import the FE data
-FE_model = importdata(fname_FE_results)
-
-% write the data to new arrays
-FE_distance = flip(FE_model.data(:,1)*1000)
-FE_temperature = flip(FE_model.data(:,2))
-FE_strain_radial = flip(FE_model.data(:,3))
-FE_strain_axial = flip(FE_model.data(:,4))
-FE_strain_equiv = flip(FE_model.data(:,5))
-FE_strain_rate = flip(FE_model.data(:,6))
-
-% create an array of points to plot the strips
-max_sample_length = 5.2
-% num_strips = 10 % this should be defined during slicing
-strip_width = max_sample_length / num_strips
-for strip_index = 1:num_strips
-    strip_position(strip_index) = 0.5*strip_width + (strip_index - 1)*strip_width
-end
 
 %% Plot the texture variation and the FE results
 
-% Plot everything together
-texture_variation_FE_results = figure();
+strip_index = 1:num_strips
+
+vol_frac_line_figure = figure();
 hold on
-plot(strip_position,basal_ND_volume_fraction*100,'Color',[1,0,0],'lineWidth',2); % red
-xlabel('Position')
-ylabel('Scaled Values')
+plot(strip_index,basal_ND_volume_fraction*100,'Color',[1,0,0],'lineWidth',2) % red);
+xlabel('Slice Number')
+ylabel('Volume Fraction (%)')
 hold on
-plot(strip_position,tilted_ND_volume_fraction*100,'Color',[0,1,0],'lineWidth',2); % green
-hold on
-plot(strip_position,TEXTURE_INDEX_strip,'Color',[1,1,0],'lineWidth',2); % ?
-hold on
-plot(strip_position,odf_strip_max/10,'Color',[0,1,1],'lineWidth',2); % ?
-hold on
-plot(FE_distance,(((FE_temperature - max(FE_temperature))+(max(FE_temperature)-min(FE_temperature)))/10),'Color',[1,0,1],'lineWidth',2); % ?
-hold on
-plot(FE_distance,FE_strain_radial,'Color',[0.5,0.5,0.5],'lineWidth',2); % ?
-hold on
-plot(FE_distance,FE_strain_axial*-1,'Color',[0.25,0.5,0.75],'lineWidth',2); % ?
-hold on
-plot(FE_distance,FE_strain_equiv,'Color',[0.75,0.5,0.25],'lineWidth',2); % ?
-hold on
-plot(FE_distance,FE_strain_rate*-10,'Color',[0.75,0.25,0.5],'lineWidth',2); % ?
+plot(strip_index,tilted_ND_volume_fraction*100,'Color',[0,1,0],'lineWidth',2) % green);
 hold off
-legend('Basal ND','Tilted ND', 'Texture Index','ODF Maximum / 10', 'Temperature Difference / 10', 'Radial Strain', 'Axial Strain', 'Equivalent Strain', 'Strain Rate / 10')
-saveas (texture_variation_FE_results, strcat(analysis_path,sample_name,'_texture_variation_FE_results_',num2str(num_strips), '.bmp'));
+legend('Basal ND','Tilted ND')
+saveas (vol_frac_line_figure, strcat(analysis_path,sample_name,'_vol_frac_line_plot_',num2str(num_strips), '.bmp'));
+ 
+text_ind_line_figure = figure();
+hold on
+plot(strip_index,TEXTURE_INDEX_strip,'Color',[1,0,0],'lineWidth',2) % red);
+xlabel('Slice Number')
+ylabel('Texture Index or ODF Max')
+hold on
+plot(strip_index,odf_strip_max,'Color',[0,1,0],'lineWidth',2) % green);
+hold off
+legend('Texture Index','ODF Maximum')
+saveas (text_ind_line_figure, strcat(analysis_path,sample_name,'_texture_index_line_plot_',num2str(num_strips), '.bmp'));
 
-% vol_frac_line_figure = figure();
-% hold on
-% plot(strip_position,basal_ND_volume_fraction*100,'Color',[1,0,0],'lineWidth',2) % red);
-% xlabel('Slice Number')
-% ylabel('Volume Fraction (%)')
-% hold on
-% plot(strip_position,tilted_ND_volume_fraction*100,'Color',[0,1,0],'lineWidth',2) % green);
-% hold on
-% plot(strip_position,tilted_ND_volume_fraction*100,'Color',[0,0,1],'lineWidth',2) % blue);
-% hold off
-% legend('Basal ND','Tilted ND', 'Tilted ND')
-% saveas (vol_frac_line_figure, strcat(analysis_path,sample_name,'_vol_frac_line_plot_',num2str(num_strips), '.bmp'));
-% 
-% text_ind_line_figure = figure();
-% hold on
-% plot(strip_position,TEXTURE_INDEX_strip,'Color',[1,0,0],'lineWidth',2) % red);
-% xlabel('Slice Number')
-% ylabel('Texture Index or ODF Max')
-% hold on
-% plot(strip_position,odf_strip_max,'Color',[0,1,0],'lineWidth',2) % green);
-% hold off
-% legend('Texture Index','ODF Maximum')
-% saveas (text_ind_line_figure, strcat(analysis_path,sample_name,'_texture_index_line_plot_',num2str(num_strips), '.bmp'));
-
-%%
-max(basal_ND_volume_fraction*100)
-max(tilted_ND_volume_fraction*100)
-max(TEXTURE_INDEX_strip)
-max(odf_strip_max)
-max(FE_temperature/100)
-max(FE_strain_radial)
-max(FE_strain_axial*-1)
-max(FE_strain_equiv)
-max(FE_strain_rate*-10)
+text_ODF_ori_figure = figure();
+hold on
+plot(strip_index, PHI,'Color',[0,0,1],'lineWidth',2); % blue
+xlabel('Slice Number')
+ylabel('PHI Angle or Misorientation')
+hold on
+plot(strip_index, misorientation_ODF_max,'Color',[0,1,0],'lineWidth',2); % green
+legend('PHI Angle of ODF Max.','Misorientation of ODF Max.')
+hold off
+saveas (text_ODF_ori_figure, strcat(analysis_path,sample_name,'_texture_ODF_orientation_plot_',num2str(num_strips), '.bmp'));
