@@ -45,10 +45,13 @@ ebsd = rotate(ebsd,90*degree,'keepEuler') % rotate the spatial data
 
 fprintf('Note, the (x,y) origin on the map will have changed and x or y could be negative!')
 
+%% Set whether figures are visible
+
+visible = 'off'
+
 %% Plot the IPF colour map
 
 phase = 'alpha'
-visible = 'off'
 outputFileName = strcat(analysis_path,sample_name,'_IPF_map_entire_region')
 IPF_map_plot(phase, ebsd, outputFileName, visible)
 
@@ -59,7 +62,6 @@ ori = ebsd('Ti-Hex').orientations
 contour_step = 0.1
 pf_max = 2.5
 outputFileName = strcat(analysis_path,sample_name,'_PF_entire_region')
-visible = 'off'
 pole_figure_plot(phase, ori, CS, contour_step, pf_max, outputFileName, visible);
 
 %% Calculate an automatic halfwidth for the ODF 
