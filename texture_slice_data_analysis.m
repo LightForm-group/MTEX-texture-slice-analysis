@@ -33,19 +33,13 @@ FE_strain_axial = FE_model.data(:,4)
 FE_strain_equiv = FE_model.data(:,5)
 FE_strain_rate = FE_model.data(:,6)
 
+% calculate a positive value for the strain rate
+FE_strain_rate_positive = sqrt(FE_strain_rate.*FE_strain_rate)
+
 % give the nominal values
 nominal_temperature = 850
 nominal_strain = 0.69
 nominal_strain_rate = -0.1
-
-% calculate normalised values
-FE_temperature_norm = ( FE_temperature - min(FE_temperature) ) / ( max(FE_temperature) -  min(FE_temperature) )
-FE_strain_radial_norm = ( FE_strain_radial  - min(FE_strain_radial) ) / ( max(FE_strain_radial) -  min(FE_strain_radial) )
-FE_strain_axial_norm = ( FE_strain_axial  - min(FE_strain_axial) ) / ( max(FE_strain_axial) -  min(FE_strain_axial) )
-FE_strain_equiv_norm = ( FE_strain_equiv - min(FE_strain_equiv) ) / ( max(FE_strain_equiv) -  min(FE_strain_equiv) )
-
-FE_strain_rate_positive = sqrt(FE_strain_rate.*FE_strain_rate)
-FE_strain_rate_norm = ( FE_strain_rate_positive - min(FE_strain_rate_positive) ) / ( max(FE_strain_rate_positive) -  min(FE_strain_rate_positive) )
 
 % calculate temperature difference
 FE_temperature_diff = ( FE_temperature - min(FE_temperature) )+( max(FE_temperature) - min(FE_temperature) )
@@ -59,15 +53,10 @@ TEXTURE = importdata(fname_TEXTURE_results)
 TEXTURE_strip_index = flip(TEXTURE.data(:,1)*1000) % flip only distance to swop
 TEXTURE_TI = TEXTURE.data(:,2)
 TEXTURE_ODF_max = TEXTURE.data(:,3)
-TEXTURE_PHI = TEXTURE.data(:,4)
+TEXTURE_PHI = TEXTURE.data(:,4).*( 180/pi() ) %for degrees
 TEXTURE_misori = TEXTURE.data(:,5)
-TEXTURE_basal_ND = TEXTURE.data(:,6)
-TEXTURE_tilted_ND = TEXTURE.data(:,7)
-
-% calculate the normalised values
-TEXTURE_TI_norm = ( TEXTURE_TI - min(TEXTURE_TI) ) / ( max(TEXTURE_TI) -  min(TEXTURE_TI) )
-TEXTURE_basal_ND_norm = ( TEXTURE_basal_ND - min(TEXTURE_basal_ND) ) / ( max(TEXTURE_basal_ND) -  min(TEXTURE_basal_ND) )
-TEXTURE_PHI_norm = ( TEXTURE_PHI - min(TEXTURE_PHI) ) / ( max(TEXTURE_PHI) -  min(TEXTURE_PHI) )
+TEXTURE_basal_ND = TEXTURE.data(:,6).*100 %for percent
+TEXTURE_tilted_ND = TEXTURE.data(:,7).*100 %for percent
 
 %% Get the maxima and minima values
 
@@ -75,28 +64,67 @@ TEXTURE_PHI_norm = ( TEXTURE_PHI - min(TEXTURE_PHI) ) / ( max(TEXTURE_PHI) -  mi
 max_FE_temperature = max(FE_temperature)
 max_FE_strain_equiv = max(FE_strain_equiv)
 max_FE_strain_rate = max(FE_strain_rate)
+max_FE_strain_rate_positive = max(FE_strain_rate_positive)
 
 % FE minima
 min_FE_temperature = min(FE_temperature)
 min_FE_strain_equiv = min(FE_strain_equiv)
 min_FE_strain_rate = min(FE_strain_rate)
+min_FE_strain_rate_positive = min(FE_strain_rate_positive)
 
 % TEXTURE maxima
 max_TEXTURE_TI = max(TEXTURE_TI)
-max_TEXTURE_PHI = max(TEXTURE_PHI)*( 180/pi() )
-max_TEXTURE_basal_ND = max(TEXTURE_basal_ND)*100 %for percent
+max_TEXTURE_PHI = max(TEXTURE_PHI)
+max_TEXTURE_basal_ND = max(TEXTURE_basal_ND)
 
 %TEXTURE minima
 min_TEXTURE_TI = min(TEXTURE_TI)
-min_TEXTURE_PHI = min(TEXTURE_PHI)*( 180/pi() )
-min_TEXTURE_basal_ND = min(TEXTURE_basal_ND)*100 %for percent
+min_TEXTURE_PHI = min(TEXTURE_PHI)
+min_TEXTURE_basal_ND = min(TEXTURE_basal_ND)
 
-%% [TODO] - Get global maxima and minima and adjust the values
+%% Or, give global maxima and minima to adjust the values
+
+% FE maxima
+max_FE_temperature = 1
+max_FE_strain_equiv = 1
+max_FE_strain_rate = 1
+max_FE_strain_rate_positive = 1
+
+% FE minima
+min_FE_temperature = 1
+min_FE_strain_equiv = 1
+min_FE_strain_rate = 1
+min_FE_strain_rate_positive = 1
+
+% TEXTURE maxima
+max_TEXTURE_TI = 1
+max_TEXTURE_PHI = 1*( 180/pi() )
+max_TEXTURE_basal_ND = 1*100 %for percent
+
+%TEXTURE minima
+min_TEXTURE_TI = 1
+min_TEXTURE_PHI = 1*( 180/pi() )
+min_TEXTURE_basal_ND = 1*100 %for percent
+
+%% Calculate normalised values
+
+% calculate the normalised values for texture
+TEXTURE_TI_norm = ( TEXTURE_TI - min_TEXTURE_TI ) / ( max_TEXTURE_TI -  min_TEXTURE_TI )
+TEXTURE_basal_ND_norm = ( TEXTURE_basal_ND - min_TEXTURE_basal_ND ) / ( max_TEXTURE_basal_ND -  min_TEXTURE_basal_ND )
+TEXTURE_PHI_norm = ( TEXTURE_PHI - min_TEXTURE_PHI ) / ( max_TEXTURE_PHI -  min_TEXTURE_PHI )
+
+% calculate normalised values
+FE_temperature_norm = ( FE_temperature - min_FE_temperature ) / ( max_FE_temperature -  min_FE_temperature )
+FE_strain_equiv_norm = ( FE_strain_equiv - min_FE_strain_equiv ) / ( max_FE_strain_equiv -  min_FE_strain_equiv )
+FE_strain_rate_norm = ( FE_strain_rate_positive - min_FE_strain_rate_positive ) / ( max_FE_strain_rate_positive -  min_FE_strain_rate_positive )
 
 %% Create an array of positions to plot the strips against
 
 % Give the maximum sample length in mm
-max_sample_length = 5.2
+% max_sample_length = max(FE_distance)
+% max_sample_length = 5.2 %dilatometer 5.2205
+% max_sample_length = 7.8 %servotest 7.8303
+max_sample_length = 8.2 %hydrawedge 8.2323
 
 num_strips = length(TEXTURE_strip_index)
 strip_width = max_sample_length / num_strips
@@ -104,7 +132,7 @@ for strip_index = 1:num_strips
     strip_position(strip_index) = 0.5*strip_width + (strip_index - 1)*strip_width
 end
 
-%% Fit texture variation using polyfit
+%% Fit texture variation using polyfit or using weighted polyfit
 
 % polyfitweighted.m downloaded from - https://uk.mathworks.com/matlabcentral/fileexchange/13520-polyfitweighted
 
@@ -141,6 +169,7 @@ set(gca,'XAxisLocation','top','YAxisLocation','left','yDir','reverse', 'Fontsize
 % plot the FE results
 line(FE_temperature_norm,FE_distance, 'lineWidth',3, 'Color', [1 0 0]);
 xlabel('Normalised Strain, Strain Rate and Temperature');
+ylabel('Position (mm)');
 hold on
 line(FE_strain_equiv_norm,FE_distance,'lineWidth',3, 'Color', [1 0.5 0]);
 hold on
@@ -158,22 +187,12 @@ line(TEXTURE_PHI_norm,strip_position,'Marker','+','Markersize', 10,'lineWidth',3
 hold on
 
 % Plot the fit or weighted fit of the texture variation
-line(x2_texture_TI,y2_texture_TI,'lineWidth',1,'lineStyle','-', 'Color', [0 0 1]);
-hold on
-line(x2_basal_ND,y2_basal_ND,'lineWidth',1,'lineStyle','-', 'Color', [0.75 0 1]);
-hold on
-line(x2_texture_PHI,y2_texture_PHI,'lineWidth',1,'lineStyle','-', 'Color', [0 0.75 1]);
-hold on
-
-% adapt this for plotting another dataset on different axes
-% ax1 = gca; % current axes
-% ax1.XColor = 'k';
-% ax1.YColor = 'k';
-% ax1_pos = ax1.Position; % position of first axes
-% ax2 = axes('Position',ax1_pos,'XAxisLocation','bottom','Color','none', 'yDir', 'reverse');
-% xlabel('Texture Values')
+% line(x2_texture_TI,y2_texture_TI,'lineWidth',1,'lineStyle','-', 'Color', [0 0 1]);
 % hold on
-% line(FE_strain_equiv_norm,FE_distance,'Parent',ax2,'lineWidth',2);
+% line(x2_basal_ND,y2_basal_ND,'lineWidth',1,'lineStyle','-', 'Color', [0.75 0 1]);
+% hold on
+% line(x2_texture_PHI,y2_texture_PHI,'lineWidth',1,'lineStyle','-', 'Color', [0 0.75 1]);
+% hold on
 
 % add a legend
 legend({'Temperature ({\circC})','Strain','Strain Rate ({s^-^1})','Texture Index','0{\circ},0{\circ},0{\circ} Component (%)','Phi Angle ({\circ})'}, 'Location', [0.75,0.45,0,0])
@@ -205,4 +224,18 @@ axes(ax7); xlabel('Temperature ({\circC})');
 
 hold off
 
-saveas (texture_variation_FE_results, strcat(analysis_path,sample_name,'_texture_variation_FE_results_',num2str(num_strips), '.bmp'));
+saveas (texture_variation_FE_results, strcat(analysis_path,sample_name,'_texture_variation_FE_results_scatter_',num2str(num_strips), '.bmp'));
+
+%% Notes
+
+% adapt this for plotting another dataset on different axes (not used currently)
+% ax1 = gca; % current axes
+% ax1.XColor = 'k';
+% ax1.YColor = 'k';
+% ax1_pos = ax1.Position; % position of first axes
+% ax2 = axes('Position',ax1_pos,'XAxisLocation','bottom','Color','none', 'yDir', 'reverse');
+% xlabel('Texture Values')
+% hold on
+% line(FE_strain_equiv_norm,FE_distance,'Parent',ax2,'lineWidth',2);
+
+max(FE_distance)

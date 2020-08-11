@@ -22,13 +22,13 @@ setMTEXpref('zAxisDirection','intoPlane');
 pname = '/Users/mbcx9cd4/Documents/MATLAB/ebsd/MTEX-texture-slice-analysis/';
 
 % which files to be imported
-mech_tester = 'Dilatometer'
-data_file = '/Example Data/'
-sample_name = 'D5' % edit this line to name of file
-ctf_file = '/SampleD5_repeat Data.ctf'
+mech_tester = 'Hydrawedge'
+data_file = '/Data/'
+sample_name = 'H4' % edit this line to name of file
+ctf_file = '/sampleH4 Data.ctf'
 data_path = strcat(mech_tester,data_file,sample_name,ctf_file)
 
-analysis_folder = '/Example Analysis/'
+analysis_folder = '/Analysis/'
 analysis_path = strcat(mech_tester,analysis_folder,sample_name,'/') % path for saving the data
 
 % which files to be imported
@@ -42,7 +42,7 @@ ebsd = EBSD.load(fname,CS,'interface','ctf',...
 
 %% Rotate the data
 
-rot = rotation('Euler', 90*degree, 90*degree, 0*degree);
+rot = rotation('Euler', 0*degree, 90*degree, 0*degree);
 
 ebsd = rotate(ebsd,rot,'keepXY'); % rotate the orientation data
 ebsd = rotate(ebsd,90*degree,'keepEuler') % rotate the spatial data
@@ -104,10 +104,10 @@ ODF_plot(phase, odf, odf_max, outputFileName, specSym, visible)
 % note, in this case x is vertical starting at 0 and runs downwards as
 % negative values, y is horizontal starting at 0 and runs left-to-right as
 % positive values. 
-x_top = -250
-y_left = 2400
-x_bottom = -5100
-y_right = 5600
+%x_top = -50
+%y_left = 1800
+%x_bottom = -7500
+%y_right = 6200
 
 x_width = x_bottom-x_top
 y_width = y_right-y_left
