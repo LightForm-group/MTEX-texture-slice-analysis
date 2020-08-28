@@ -4,19 +4,19 @@
 pname = '/Users/mbcx9cd4/Documents/MATLAB/ebsd/MTEX-texture-slice-analysis/';
 
 % where are the FE results located
-mech_tester = 'Dilatometer'
-data_folder = '/Example Data/'
-sample_name = 'D5' % edit this line to name of file
-FE_results_file = 'FE Results D5.txt'
+mech_tester = 'Servotest'
+data_folder = '/Data/'
+sample_name = 'S5' % edit this line to name of file
+FE_results_file = 'FE Results S5.txt'
 FE_results_path = strcat(mech_tester,data_folder,sample_name,'/',FE_results_file)
 fname_FE_results = [pname FE_results_path]
 
 % where should the analysis be saved
-analysis_folder = '/Example Analysis/'
+analysis_folder = '/Analysis/'
 analysis_path = strcat(mech_tester,analysis_folder,sample_name,'/') % path for saving the data
 
 % where is the texture data from the slice analysis saved
-TEXTURE_results_file = 'D5_texture_strength_20.txt'
+TEXTURE_results_file = 'S5_texture_strength_20.txt'
 TEXTURE_results_path = strcat(mech_tester,analysis_folder,sample_name,'/',TEXTURE_results_file)
 fname_TEXTURE_results = [pname TEXTURE_results_path]
 
@@ -122,8 +122,8 @@ FE_strain_rate_norm = ( FE_strain_rate_positive - min_FE_strain_rate_positive ) 
 
 % Give the maximum sample length in mm
 % max_sample_length = max(FE_distance)
-max_sample_length = 5.2 %dilatometer 5.2205
-% max_sample_length = 7.8 %servotest 7.8303
+% max_sample_length = 5.2 %dilatometer 5.2205
+max_sample_length = 7.8 %servotest 7.8303
 % max_sample_length = 8.2 %hydrawedge 8.2323
 
 num_strips = length(TEXTURE_strip_index)
@@ -170,26 +170,20 @@ set(gca,'XAxisLocation','top','YAxisLocation','left','yDir','reverse', 'Fontsize
 line(FE_temperature_norm,FE_distance, 'lineWidth',3, 'Color', [1 0 0]);
 xlabel('Normalised Strain, Strain Rate and Temperature');
 ylabel('Position (mm)');
-xlim([0,1])
 hold on
 line(FE_strain_equiv_norm,FE_distance,'lineWidth',3, 'Color', [1 0.5 0]);
-xlim([0,1])
 hold on
 line(FE_strain_rate_norm,FE_distance,'lineWidth',3,'Color', [1 0.8 0] );
-xlim([0,1])
 hold on
 
 % plot the texture variation
 line(TEXTURE_TI_norm,strip_position,'Marker','o','Markersize', 10,'lineWidth',3,'lineStyle','none', 'Color', [0 0 1]);
 xlabel('Normalised Texture Values');
 ylabel('Position (mm)');
-xlim([0,1])
 hold on
 line(TEXTURE_basal_ND_norm,strip_position,'Marker','x','Markersize', 10,'lineWidth',3,'lineStyle','none', 'Color', [0.75 0 1]);
-xlim([0,1])
 hold on
 line(TEXTURE_PHI_norm,strip_position,'Marker','+','Markersize', 10,'lineWidth',3,'lineStyle','none', 'Color', [0 0.75 1]);
-xlim([0,1])
 hold on
 
 % Plot the fit or weighted fit of the texture variation
