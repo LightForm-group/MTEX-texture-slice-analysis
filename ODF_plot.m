@@ -25,6 +25,7 @@ function [  ] = ODF_plot(phase, odf, odf_max, outputFileName, specSym, visible);
     else 
       disp('specSym not satisfied - choose orthorhombic or triclinic');
     end
+    close(ODF_fig);
   
   elseif strcmp(phase, 'beta');
     ODF_fig = figure();
@@ -39,6 +40,7 @@ function [  ] = ODF_plot(phase, odf, odf_max, outputFileName, specSym, visible);
     else 
       disp('specSym not satisfied - choose orthorhombic or triclinic');
     end
+    close(ODF_fig);
     
   else 
     disp ('Phase not recognised for plotting ODF slices.'); 
