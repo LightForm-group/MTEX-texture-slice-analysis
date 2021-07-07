@@ -18,3 +18,7 @@ D9        700             1.0
 All these above EBSD scans are taken across the crosssection
 
 EBSD scans taken at the midplane: D3_midplane, D5_midplane, D9_midplane
+
+D3 require 0,0,0 rotation, D2, D5, D9 require 90,90,0 rotation.
+
+D5 have alpha and beta phase the wrong way round.

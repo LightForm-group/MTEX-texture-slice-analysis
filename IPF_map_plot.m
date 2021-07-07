@@ -23,9 +23,18 @@ function [  ] = IPF_map_plot(phase, ebsd, outputFileName, visible);
     color = oM.orientation2color(ebsd('Ti-Hex').orientations);
     plot(ebsd('Ti-Hex'),color);
     hold off
-    saveas (IPF_map, outputFileName, 'bmp');
+    saveas (IPF_map, outputFileName, 'png');
 
   elseif strcmp(phase, 'beta');
+    IPF_map = figure();
+    plot(ebsd);
+    hold on
+    oM = ipfHSVKey(ebsd('Titanium Cubic'))
+    oM.inversePoleFigureDirection = yvector;
+    color = oM.orientation2color(ebsd('Titanium Cubic').orientations);
+    plot(ebsd('Titanium Cubic'),color);
+    hold off
+    saveas (IPF_map, outputFileName, 'png');
     
   else 
     disp ('Phase not recognised for plotting IPF map.');

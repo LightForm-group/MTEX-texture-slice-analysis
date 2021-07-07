@@ -5,7 +5,6 @@ CS = {...
    'notIndexed',...
    crystalSymmetry('6/mmm', [2.954 2.954 4.729], 'X||a*', 'Y||b', 'Z||c*', 'mineral', 'Ti-Hex', 'color', 'light blue'),...
    crystalSymmetry('m-3m', [3.192 3.192 3.192], 'mineral', 'Titanium cubic', 'color', 'light green')};
-SS = specimenSymmetry('111')
 
 % crystal symmetry with beta first
 % CS = {... 
@@ -23,13 +22,13 @@ setMTEXpref('zAxisDirection','intoPlane');
 pname = '/Users/mbcx9cd4/Documents/MATLAB/ebsd/MTEX-texture-slice-analysis/';
 
 % which files to be imported
-mech_tester = 'Dilatometer'
-data_file = '/Example Data/'
-sample_name = 'D5' % edit this line to name of file
-ctf_file = '/sampleD5_repeat Data.ctf'
+mech_tester = 'Servotest'
+data_file = '/Data/'
+sample_name = 'S3' % edit this line to name of file
+ctf_file = '/S3 Beta.ctf'
 data_path = strcat(mech_tester,data_file,sample_name,ctf_file)
 
-analysis_folder = '/Example Analysis/'
+analysis_folder = '/Analysis/'
 analysis_path = strcat(mech_tester,analysis_folder,sample_name,'/') % path for saving the data
 
 % which files to be imported
@@ -59,23 +58,23 @@ visible = 'off'
 
 %% Plot the IPF colour map
 
-phase = 'alpha'
+phase = 'beta'
 outputFileName = strcat(analysis_path,sample_name,'_IPF_map_entire_region')
 IPF_map_plot(phase, ebsd, outputFileName, visible)
 
 %% Plot the pole figures for the whole compression sample
 
-phase = 'alpha'
-ori = ebsd('Ti-Hex').orientations
+phase = 'beta'
+ori = ebsd('Titanium cubic').orientations
 contour_step = 0.1
 pf_max = 2.5
-outputFileName = strcat(analysis_path,sample_name,'_PF_entire_region')
+outputFileName = strcat(analysis_path,sample_name,'_Beta_PF_entire_region')
 pole_figure_plot(phase, ori, CS, contour_step, pf_max, outputFileName, visible);
 
 %% Calculate an automatic halfwidth for the ODF 
 
 % if the orientations are spatially independant...
-psi=calcKernel(ebsd('Ti-Hex').orientations);
+psi=calcKernel(ebsd('Titanium cubic').orientations);
 
 % if the EBSD measurements are not rough texture measurements and are spatially dependant (more than one point per grain), then perform grain reconstruction and estimate the halfwidth from the grains...
 % grain reconstruction (default is 10 degrees so could just use calcGrains(ebsd))...
@@ -89,7 +88,7 @@ HALF_WIDTH = psi
 
 %% Calculate the ODF using the optimised halfwidth
 
-odf = calcDensity(ebsd('Ti-Hex').orientations,'kernel',psi);
+odf = calcDensity(ebsd('Titanium Cubic').orientations,'kernel',psi);
 
 %% Calculate the Texture Index for the whole compresion sample
 
@@ -98,7 +97,7 @@ TEXTURE_INDEX = textureindex(odf)
 %% Plot the ODF slices without contouring for the whole compression sample
 
 odf_max = 3.0
-outputFileName = strcat(analysis_path,sample_name,'_ODF_entire_region')
+outputFileName = strcat(analysis_path,sample_name,'_Beta_ODF_entire_region')
 specSym = 'triclinic'
 ODF_plot(phase, odf, odf_max, outputFileName, specSym, visible)
 
@@ -107,10 +106,10 @@ ODF_plot(phase, odf, odf_max, outputFileName, specSym, visible)
 % negative values, y is horizontal starting at 0 and runs left-to-right as
 % positive values. 
 
-x_top = -250
-y_left = 2400
-x_bottom = -5100
-y_right = 5600
+x_top = -50
+y_left = 2600
+x_bottom = -7190
+y_right = 7600
 
 x_width = x_bottom-x_top
 y_width = y_right-y_left
@@ -118,14 +117,14 @@ y_width = y_right-y_left
 region = [x_top, y_left, x_width, y_width]; % note, region is defined as x,y origin and an x,y width which is added onto the origin
 condition = inpolygon(ebsd,region); % points located within region
 ebsd_cropped = ebsd(condition);
-ori_cropped = ebsd_cropped('Ti-Hex').orientations
+ori_cropped = ebsd_cropped('Titanium Cubic').orientations
 
 % plot the IPF map for the cropped compression sample
-outputFileName = strcat(analysis_path,sample_name,'_IPF_map_cropped')
+outputFileName = strcat(analysis_path,sample_name,'_Beta_IPF_map_cropped')
 IPF_map_plot(phase, ebsd_cropped, outputFileName, visible)
 
 % plot the pole figures for the cropped compression sample
-outputFileName = strcat(analysis_path,sample_name,'_PF_cropped')
+outputFileName = strcat(analysis_path,sample_name,'_Beta_PF_cropped')
 pole_figure_plot(phase, ori_cropped, CS, contour_step, pf_max, outputFileName, visible);
 
 % calculate an automatic halfwidth for the ODF for the cropped compression sample
@@ -139,7 +138,7 @@ odf_cropped = calcDensity(ori_cropped,'kernel',psi);
 TEXTURE_INDEX = textureindex(odf_cropped)
 
 % plot the ODF slices without contouring for the cropped compression sample
-outputFileName = strcat(analysis_path,sample_name,'_ODF_cropped')
+outputFileName = strcat(analysis_path,sample_name,'_Beta_ODF_cropped')
 specSym = 'triclinic'
 ODF_plot(phase, odf_cropped, odf_max, outputFileName, specSym, visible)
 
@@ -273,7 +272,7 @@ y_origin = y_left
 
 %% Slice the entire map or the cropped map
 
-num_strips = 20; % number of strips to cut the map into (resolution)
+num_strips = 5; % number of strips to cut the map into (resolution)
 
 % define the size of the EBSD map
 ebsd_grid = ebsd.gridify;
@@ -307,15 +306,15 @@ for strip_index = 0:num_strips-1
     % note, region is defined as x,y origin and an x,y width which is added onto the origin
     
     % if splitting into strips along y (breaking up y)
-    % y_min_strip = strip_index * y_width + y_min;
+    % y_min_strip = strip_index * y_width;
     % region = [x_min*stepSize, y_min_strip*stepSize, x_length*stepSize, y_width*stepSize];
     
     % if splitting into strips along y (breaking up y) and x is negative
-    % y_min_strip = strip_index * y_width + y_min;
+    % y_min_strip = strip_index * y_width;
     % region = [-x_min*stepSize, y_min_strip*stepSize, -x_length*stepSize, y_width*stepSize];
     
     % if splitting into strips along x (breaking up x)
-    % x_min_strip = strip_index * x_width + x_min;
+    % x_min_strip = strip_index * x_width;
     % region = [x_min_strip*stepSize, y_min*stepSize, x_width*stepSize, y_length*stepSize];
     
     % if splitting into strips along x (breaking up x) and x is negative
@@ -329,7 +328,7 @@ for strip_index = 0:num_strips-1
     ebsd_cutmap = cutmap(strip_index); % read out ebsd_cutmap from the Map object
     
     % plot the IPF map to check the slices
-    outputFileName = strcat(analysis_path,sample_name,'_IPF_map_strip_',num2str(strip_index))
+    outputFileName = strcat(analysis_path,sample_name,'_Beta_IPF_map_strip_',num2str(strip_index))
     IPF_map_plot(phase, ebsd_cutmap, outputFileName, visible)
     
 end 
@@ -337,7 +336,7 @@ end
 %% Analyse and plot the sliced data to see how the texture components change along the length
 
 % define the crystal system for the texture components
-cs = ebsd('Ti-Hex').CS;
+cs = ebsd('Titanium Cubic').CS;
 
 % define the maximum possible misorientation
 misorientation = 10
@@ -358,14 +357,14 @@ for strip_index = 0:num_strips-1
     ebsd_cutmap = cutmap(strip_index); % read out ebsd_cutmap from the Map object
     
     % plot the IPF map, pole figures and odf slices
-    outputFileName = strcat(analysis_path,sample_name,'_IPF_map_strip_',num2str(strip_index))
+    outputFileName = strcat(analysis_path,sample_name,'_Beta_IPF_map_strip_',num2str(strip_index))
     IPF_map_plot(phase, ebsd_cutmap, outputFileName, visible)
     
-    ori_strip = ebsd_cutmap('Ti-Hex').orientations
-    outputFileName = strcat(analysis_path,sample_name,'_PF_strip_',num2str(strip_index))
+    ori_strip = ebsd_cutmap('Titanium Cubic').orientations
+    outputFileName = strcat(analysis_path,sample_name,'_Beta_PF_strip_',num2str(strip_index))
     pole_figure_plot(phase, ori_strip, CS, contour_step, pf_max, outputFileName, visible);
     
-    outputFileName = strcat(analysis_path,sample_name,'_ODF_strip_',num2str(strip_index))
+    outputFileName = strcat(analysis_path,sample_name,'_Beta_ODF_strip_',num2str(strip_index))
     psi=calcKernel(ori_strip);
     HALF_WIDTH = psi
     odf_strip = calcDensity(ori_strip,'kernel',psi);
@@ -388,12 +387,12 @@ for strip_index = 0:num_strips-1
     total_volume = length(ebsd_cutmap) % calculate the total volume as the number of points in the map
 
     % seperate a texture component and calculate the volume fraction
-    ebsd_basal_ND = ebsd_cutmap('Ti-Hex').findByOrientation(basal_ND, misorientation*degree);
+    ebsd_basal_ND = ebsd_cutmap('Titanium Cubic').findByOrientation(basal_ND, misorientation*degree);
     basal_ND_volume = length(ebsd_basal_ND);
     basal_ND_volume_fraction(strip_index+1) = (basal_ND_volume/total_volume)
     
     % seperate a texture component and calculate the volume fraction
-    ebsd_tilted_ND = ebsd_cutmap('Ti-Hex').findByOrientation(tilted_ND, misorientation*degree);
+    ebsd_tilted_ND = ebsd_cutmap('Titanium Cubic').findByOrientation(tilted_ND, misorientation*degree);
     tilted_ND_volume = length(ebsd_tilted_ND);
     tilted_ND_volume_fraction(strip_index+1) = (tilted_ND_volume/total_volume)
     
@@ -425,7 +424,7 @@ hold on
 plot(strip_index,tilted_ND_volume_fraction*100,'Color',[0,1,0],'lineWidth',2) % green);
 hold off
 legend('Basal ND','Tilted ND')
-saveas (vol_frac_line_figure, strcat(analysis_path,sample_name,'_vol_frac_line_plot_',num2str(num_strips), '.png'));
+saveas (vol_frac_line_figure, strcat(analysis_path,sample_name,'_vol_frac_line_plot_',num2str(num_strips), '.bmp'));
  
 text_ind_line_figure = figure();
 hold on
@@ -436,7 +435,7 @@ hold on
 plot(strip_index,odf_strip_max,'Color',[0,1,0],'lineWidth',2) % green);
 hold off
 legend('Texture Index','ODF Maximum')
-saveas (text_ind_line_figure, strcat(analysis_path,sample_name,'_texture_index_line_plot_',num2str(num_strips), '.png'));
+saveas (text_ind_line_figure, strcat(analysis_path,sample_name,'_texture_index_line_plot_',num2str(num_strips), '.bmp'));
 
 text_ODF_ori_figure = figure();
 hold on
@@ -447,4 +446,4 @@ hold on
 plot(strip_index, misorientation_ODF_max,'Color',[0,1,0],'lineWidth',2); % green
 legend('PHI Angle of ODF Max.','Misorientation of ODF Max.')
 hold off
-saveas (text_ODF_ori_figure, strcat(analysis_path,sample_name,'_texture_ODF_orientation_plot_',num2str(num_strips), '.png'));
+saveas (text_ODF_ori_figure, strcat(analysis_path,sample_name,'_texture_ODF_orientation_plot_',num2str(num_strips), '.bmp'));

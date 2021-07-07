@@ -4,19 +4,19 @@
 pname = '/Users/mbcx9cd4/Documents/MATLAB/ebsd/MTEX-texture-slice-analysis/';
 
 % where are the FE results located
-mech_tester = 'Dilatometer'
-data_folder = '/Example Data/'
-sample_name = 'D5' % edit this line to name of file
-FE_results_file = 'FE Results D5.txt'
+mech_tester = 'Hydrawedge'
+data_folder = '/Data/'
+sample_name = 'H6' % edit this line to name of file
+FE_results_file = 'FE Results H6.txt'
 FE_results_path = strcat(mech_tester,data_folder,sample_name,'/',FE_results_file)
 fname_FE_results = [pname FE_results_path]
 
 % where should the analysis be saved
-analysis_folder = '/Example Analysis/'
+analysis_folder = '/Analysis/'
 analysis_path = strcat(mech_tester,analysis_folder,sample_name,'/') % path for saving the data
 
 % where is the texture data from the slice analysis saved
-TEXTURE_results_file = 'D5_texture_strength_20.txt'
+TEXTURE_results_file = 'H6_texture_strength_20.txt'
 TEXTURE_results_path = strcat(mech_tester,analysis_folder,sample_name,'/',TEXTURE_results_file)
 fname_TEXTURE_results = [pname TEXTURE_results_path]
 
@@ -85,26 +85,26 @@ min_TEXTURE_basal_ND = min(TEXTURE_basal_ND)
 %% Or, give global maxima and minima to adjust the values
 
 % FE maxima
-max_FE_temperature = 855
-max_FE_strain_equiv = 1.4
+max_FE_temperature = 810 % change this
+max_FE_strain_equiv = 1.8
 max_FE_strain_rate = 0
-max_FE_strain_rate_positive = 0.22
+max_FE_strain_rate_positive = 3.0 % change this
 
 % FE minima
-min_FE_temperature = 815
+min_FE_temperature = 630 % change this
 min_FE_strain_equiv = 0
-min_FE_strain_rate = -0.22
+min_FE_strain_rate = -3.0 % change this
 min_FE_strain_rate_positive = 0
 
 % TEXTURE maxima
-max_TEXTURE_TI = 1.85
-max_TEXTURE_PHI = 40 % in degrees
-max_TEXTURE_basal_ND = 1.15 % in percent
+max_TEXTURE_TI = 3.8
+max_TEXTURE_PHI = 90.2 % in degrees
+max_TEXTURE_basal_ND = 1.35 % in percent
 
 %TEXTURE minima
 min_TEXTURE_TI = 1.05
 min_TEXTURE_PHI = 0 % in degrees
-min_TEXTURE_basal_ND = 0.15 % in percent
+min_TEXTURE_basal_ND = 0.05 % in percent
 
 %% Calculate normalised values
 
@@ -122,9 +122,9 @@ FE_strain_rate_norm = ( FE_strain_rate_positive - min_FE_strain_rate_positive ) 
 
 % Give the maximum sample length in mm
 % max_sample_length = max(FE_distance)
-max_sample_length = 5.2 %dilatometer 5.2205
-% max_sample_length = 7.8 %servotest 7.8303
-% max_sample_length = 8.2 %hydrawedge 8.2323
+% max_sample_length = 5.2205 %dilatometer 5.2205
+% max_sample_length = 7.8303 %servotest 7.8303
+max_sample_length = 8.2323 %hydrawedge 8.2323
 
 num_strips = length(TEXTURE_strip_index)
 strip_width = max_sample_length / num_strips
@@ -223,7 +223,7 @@ set(ax6, 'xlim', [-max_FE_strain_equiv -min_FE_strain_equiv], 'Fontsize', 16);
 set(ax7, 'xlim', [min_FE_temperature max_FE_temperature], 'Fontsize', 16);
 axes(ax2); xlabel('Texture Index');
 axes(ax3); xlabel('0{\circ},0{\circ},0{\circ} Component (%)');
-axes(ax4); xlabel('Phi Angle ({\circ})');
+axes(ax4); xlabel('PHI Angle ({\circ})');
 axes(ax5); xlabel('Strain Rate ({s^-^1})');
 axes(ax6); xlabel('Strain');
 axes(ax7); xlabel('Temperature ({\circC})');
