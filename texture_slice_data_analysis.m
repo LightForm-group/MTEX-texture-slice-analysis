@@ -4,10 +4,10 @@
 pname = '/Users/mbcx9cd4/Documents/MATLAB/ebsd/MTEX-texture-slice-analysis/';
 
 % where are the FE results located
-mech_tester = 'Hydrawedge'
+mech_tester = 'Dilatometer'
 data_folder = '/Data/'
-sample_name = 'H6' % edit this line to name of file
-FE_results_file = 'FE Results H6.txt'
+sample_name = 'D5' % edit this line to name of file
+FE_results_file = 'FE Results D5.txt'
 FE_results_path = strcat(mech_tester,data_folder,sample_name,'/',FE_results_file)
 fname_FE_results = [pname FE_results_path]
 
@@ -16,7 +16,7 @@ analysis_folder = '/Analysis/'
 analysis_path = strcat(mech_tester,analysis_folder,sample_name,'/') % path for saving the data
 
 % where is the texture data from the slice analysis saved
-TEXTURE_results_file = 'H6_texture_strength_20.txt'
+TEXTURE_results_file = 'D5_texture_strength_20.txt'
 TEXTURE_results_path = strcat(mech_tester,analysis_folder,sample_name,'/',TEXTURE_results_file)
 fname_TEXTURE_results = [pname TEXTURE_results_path]
 
@@ -122,9 +122,9 @@ FE_strain_rate_norm = ( FE_strain_rate_positive - min_FE_strain_rate_positive ) 
 
 % Give the maximum sample length in mm
 % max_sample_length = max(FE_distance)
-% max_sample_length = 5.2205 %dilatometer 5.2205
+max_sample_length = 5.2205 %dilatometer 5.2205
 % max_sample_length = 7.8303 %servotest 7.8303
-max_sample_length = 8.2323 %hydrawedge 8.2323
+% max_sample_length = 8.2323 %hydrawedge 8.2323
 
 num_strips = length(TEXTURE_strip_index)
 strip_width = max_sample_length / num_strips
@@ -299,6 +299,75 @@ axes(ax6); xlabel('Temperature ({\circC})');
 hold off
 
 saveas (texture_variation_FE_results, strcat(analysis_path,sample_name,'_texture_variation_FE_results_scatter_without_PHI',num2str(num_strips), '.bmp'));
+
+%% Plot the texture variation and the FE results (without 0,0,0 component)
+% This reverses the texture index values to plot texture index alongside
+% PHI angle and to compare with the FE results.
+
+% setup the figure
+texture_variation_FE_results = figure();
+set(gcf, 'Position', [10 10 900 1000]) % format is [left bottom width height]
+set(gca,'XAxisLocation','top','YAxisLocation','left','yDir','reverse', 'Fontsize', 16, 'lineWidth',2);
+
+% plot the FE results
+line(FE_temperature_norm,FE_distance, 'lineWidth',3, 'Color', [1 0 0]);
+xlabel('Normalised Strain, Strain Rate and Temperature');
+ylabel('Position (mm)');
+xlim([0,1])
+hold on
+line(FE_strain_equiv_norm,FE_distance,'lineWidth',3, 'Color', [1 0.5 0]);
+xlim([0,1])
+hold on
+line(FE_strain_rate_norm,FE_distance,'lineWidth',3,'Color', [1 0.8 0] );
+xlim([0,1])
+hold on
+
+% plot the texture variation
+line(TEXTURE_TI_norm,strip_position,'Marker','o','Markersize', 10,'lineWidth',3,'lineStyle','none', 'Color', [0 0 1]);
+xlabel('Normalised Texture Values');
+ylabel('Position (mm)');
+xlim([0,1])
+hold on
+line(TEXTURE_PHI_norm,strip_position,'Marker','x','Markersize', 10,'lineWidth',3,'lineStyle','none', 'Color', [0.75 0 1]);
+xlim([0,1])
+hold on
+
+% Plot the fit or weighted fit of the texture variation
+% line(x2_texture_TI,y2_texture_TI,'lineWidth',1,'lineStyle','-', 'Color', [0 0 1]);
+% hold on
+% line(x2_basal_ND,y2_basal_ND,'lineWidth',1,'lineStyle','-', 'Color', [0.75 0 1]);
+% hold on
+% line(x2_texture_PHI,y2_texture_PHI,'lineWidth',1,'lineStyle','-', 'Color', [0 0.75 1]);
+% hold on
+
+% add a legend
+legend({'Temperature ({\circC})','Strain','Strain Rate ({s^-^1})','Texture Index','Phi Angle ({\circ})'}, 'Location', [0.75,0.45,0,0])
+
+% adding axes for normalised parameters
+ax1 = gca; % current axes
+ax1.XColor = 'none'; % clear previous x-axis
+ax1_pos = ax1.Position; % position of first axes
+set(ax1, 'Position', ax1_pos + [0 0.1 -0.3 -0.3]); % move existing axis up a bit and reduce height, format is [left bottom width height]
+ax2 = axes('position', (ax1_pos .* [1 1 1 1e-3]) + [0 0.10 -0.3 0], 'color', 'none', 'linewidth', 2, 'xDir', 'reverse');
+ax3 = axes('position', (ax1_pos .* [1 1 1 1e-3]) + [0 0.025 -0.3 0], 'color', 'none', 'linewidth', 2);
+ax4 = axes('XAxisLocation','top','position', (ax1_pos .* [1 1 1 1e-3]) + [0 0.615 -0.3 0], 'color', 'none', 'linewidth', 2, 'xDir', 'reverse');
+ax5 = axes('XAxisLocation','top','position', (ax1_pos .* [1 1 1 1e-3]) + [0 0.69 -0.3 0], 'color', 'none', 'linewidth', 2, 'xDir', 'reverse');
+ax6 = axes('XAxisLocation','top','position', (ax1_pos .* [1 1 1 1e-3]) + [0 0.765 -0.3 0], 'color', 'none', 'linewidth', 2);
+set(ax1, 'ylim', [0 max_sample_length]);
+set(ax2, 'xlim', [max_TEXTURE_TI min_TEXTURE_TI], 'Fontsize', 16);
+set(ax3, 'xlim', [min_TEXTURE_PHI max_TEXTURE_PHI], 'Fontsize', 16);
+set(ax4, 'xlim', [min_FE_strain_rate max_FE_strain_rate], 'Fontsize', 16);
+set(ax5, 'xlim', [-max_FE_strain_equiv -min_FE_strain_equiv], 'Fontsize', 16);
+set(ax6, 'xlim', [min_FE_temperature max_FE_temperature], 'Fontsize', 16);
+axes(ax2); xlabel('Texture Index');
+axes(ax3); xlabel('PHI Angle ({\circ})');
+axes(ax4); xlabel('Strain Rate ({s^-^1})');
+axes(ax5); xlabel('Strain');
+axes(ax6); xlabel('Temperature ({\circC})');
+
+hold off
+
+saveas (texture_variation_FE_results, strcat(analysis_path,sample_name,'_texture_variation_FE_results_scatter_without_000component',num2str(num_strips), '.bmp'));
 
 %% Notes
 

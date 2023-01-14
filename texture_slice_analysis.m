@@ -1,17 +1,17 @@
 %% Specify Crystal and Specimen Symmetries
 
 % crystal symmetry with alpha first
-CS = {... 
-   'notIndexed',...
-   crystalSymmetry('6/mmm', [2.954 2.954 4.729], 'X||a*', 'Y||b', 'Z||c*', 'mineral', 'Ti-Hex', 'color', 'light blue'),...
-   crystalSymmetry('m-3m', [3.192 3.192 3.192], 'mineral', 'Titanium cubic', 'color', 'light green')};
-SS = specimenSymmetry('111')
-
-% crystal symmetry with beta first
 % CS = {... 
 %    'notIndexed',...
-%    crystalSymmetry('m-3m', [3.192 3.192 3.192], 'mineral', 'Titanium cubic', 'color', 'light green'),...
-%    crystalSymmetry('6/mmm', [2.954 2.954 4.729], 'X||a*', 'Y||b', 'Z||c*', 'mineral', 'Ti-Hex', 'color', 'light blue')};
+%    crystalSymmetry('6/mmm', [2.954 2.954 4.729], 'X||a*', 'Y||b', 'Z||c*', 'mineral', 'Ti-Hex', 'color', 'light blue'),...
+%    crystalSymmetry('m-3m', [3.192 3.192 3.192], 'mineral', 'Titanium cubic', 'color', 'light green')};
+% SS = specimenSymmetry('triclinic')
+
+% crystal symmetry with beta first
+CS = {... 
+    'notIndexed',...
+    crystalSymmetry('m-3m', [3.192 3.192 3.192], 'mineral', 'Titanium cubic', 'color', 'light green'),...
+    crystalSymmetry('6/mmm', [2.954 2.954 4.729], 'X||a*', 'Y||b', 'Z||c*', 'mineral', 'Ti-Hex', 'color', 'light blue')};
 
 % plotting convention
 setMTEXpref('xAxisDirection','north');
@@ -35,16 +35,38 @@ analysis_path = strcat(mech_tester,analysis_folder,sample_name,'/') % path for s
 % which files to be imported
 fname = [pname data_path]
 
+%% Specify File Names
+
+% path to files
+pname = '/Users/mbcx9cd4/Documents/MATLAB/ebsd/MTEX-texture-slice-analysis/';
+
+% which files to be imported
+mech_tester = 'Dilatometer'
+data_file = '/Data/'
+sample_name = 'Chris D2' % edit this line to name of file
+ctf_file = '/Chris D2 High Res Line Scan.ctf'
+data_path = strcat(mech_tester,data_file,sample_name,ctf_file)
+
+analysis_folder = '/Analysis/'
+analysis_path = strcat(mech_tester,analysis_folder,sample_name,'/') % path for saving the data
+
+% which files to be imported
+fname = [pname data_path]
+
 %% Import the Data
 
 % create an EBSD variable containing the data
 ebsd = EBSD.load(fname,CS,'interface','ctf',...
   'convertEuler2SpatialReferenceFrame')
 
+%% Reduce the Data
+
+ebsd = reduce(ebsd,5)
+
 %% Rotate the data
 
 rot = rotation('Euler', 90*degree, 90*degree, 0*degree);
-%rot = rotation('Euler', 0*degree, 0*degree, 0*degree);
+% rot = rotation('Euler', 0*degree, 90*degree, 90*degree);
 
 ebsd = rotate(ebsd,rot,'keepXY'); % rotate the orientation data
 ebsd = rotate(ebsd,90*degree,'keepEuler') % rotate the spatial data
@@ -55,13 +77,25 @@ fprintf('Note, the (x,y) origin on the map will have changed and x or y could be
 
 %% Set whether figures are visible
 
-visible = 'off'
+visible = 'on'
 
 %% Plot the IPF colour map
 
 phase = 'alpha'
 outputFileName = strcat(analysis_path,sample_name,'_IPF_map_entire_region')
 IPF_map_plot(phase, ebsd, outputFileName, visible)
+
+%% Calculate Sample Dimensions
+
+ebsd_grid = ebsd.gridify;
+ebsd_shape = size(ebsd_grid.id);
+original_y = ebsd_shape(1);
+original_x = ebsd_shape(2);
+stepSize = ebsd_grid.dx;
+size_y = ebsd_shape(1)*stepSize
+size_x = ebsd_shape(2)*stepSize
+
+fprintf('Sample size limits are, y limit =', size_y,' and x limit = ', size_x)
 
 %% Plot the pole figures for the whole compression sample
 
@@ -107,10 +141,10 @@ ODF_plot(phase, odf, odf_max, outputFileName, specSym, visible)
 % negative values, y is horizontal starting at 0 and runs left-to-right as
 % positive values. 
 
-x_top = -250
-y_left = 2400
+x_top = -50
+y_left = -216
 x_bottom = -5100
-y_right = 5600
+y_right = 2868
 
 x_width = x_bottom-x_top
 y_width = y_right-y_left
@@ -273,7 +307,7 @@ y_origin = y_left
 
 %% Slice the entire map or the cropped map
 
-num_strips = 20; % number of strips to cut the map into (resolution)
+num_strips = 30; % number of strips to cut the map into (resolution)
 
 % define the size of the EBSD map
 ebsd_grid = ebsd.gridify;
@@ -282,21 +316,21 @@ original_y = ebsd_shape(1);
 original_x = ebsd_shape(2);
 stepSize = ebsd_grid.dx;
 
-x_min = (sqrt(x_origin * x_origin)/stepSize);
-x_max = original_x + (sqrt(x_origin * x_origin)/stepSize);
-x_length = x_max - x_min;
+x_min = (sqrt(x_origin * x_origin)/stepSize)
+x_max = original_x + (sqrt(x_origin * x_origin)/stepSize)
+x_length = x_max - x_min
 
-y_min = (sqrt(y_origin * y_origin)/stepSize);
-y_max = original_y + (sqrt(y_origin * y_origin)/stepSize);
-y_length = y_max - y_min;
+y_min = (sqrt(y_origin * y_origin)/stepSize)
+y_max = original_y + (sqrt(y_origin * y_origin)/stepSize)
+y_length = y_max - y_min
 
 % used if splitting into strips along y
-y_width = floor(y_length / num_strips); % round to nearest integer
-y_axis = (1:num_strips);
+y_width = floor(y_length / num_strips) % round to nearest integer
+y_axis = (1:num_strips)
 
 % used if splitting into strips along x
-x_width = floor(x_length / num_strips); % round to nearest integer
-x_axis = (1:num_strips);
+x_width = floor(x_length / num_strips) % round to nearest integer
+x_axis = (1:num_strips)
 
 cutmap = containers.Map('KeyType', 'int32', 'ValueType', 'any'); % creates an empty Map object
 
@@ -319,8 +353,14 @@ for strip_index = 0:num_strips-1
     % region = [x_min_strip*stepSize, y_min*stepSize, x_width*stepSize, y_length*stepSize];
     
     % if splitting into strips along x (breaking up x) and x is negative
+    % and x is moving in negative direction
+    % x_min_strip = strip_index * x_width + x_min;
+    % region = [-x_min_strip*stepSize, y_min*stepSize, -x_width*stepSize, y_length*stepSize];
+    
+    % if splitting into strips along x (breaking up x) and x and y are negative
+    % and x is moving in negative direction, 
     x_min_strip = strip_index * x_width + x_min;
-    region = [-x_min_strip*stepSize, y_min*stepSize, -x_width*stepSize, y_length*stepSize];
+    region = [-x_min_strip*stepSize, -y_min*stepSize, -x_width*stepSize, y_length*stepSize];
     
     % Cut the EBSD map
     condition = inpolygon(ebsd,region); % points located within region
@@ -343,9 +383,12 @@ cs = ebsd('Ti-Hex').CS;
 misorientation = 10
 
 % Define a texture component for the hexagonal phase
+% Define a texture component for the hexagonal phase
 % basal_ND = symmetrise(orientation.byMiller([0 0 0 1],[1 0 -1 0],cs),'unique'); % define component with directions
 basal_ND = symmetrise(orientation.byEuler(0*degree,0*degree,0*degree,cs),'unique') % define component with Euler angles
 tilted_ND = symmetrise(orientation.byEuler(0*degree,30*degree,0*degree,cs),'unique') % define component with Euler angles
+basal_TD = symmetrise(orientation.byEuler(0*degree,90*degree,0*degree,cs),'unique') % define component with Euler angles
+basal_RD = symmetrise(orientation.byEuler(90*degree,90*degree,0*degree,cs),'unique') % define component with Euler angles
 
 % Define a texture component for the cubic phase
 rotated_cube = orientation.byMiller([0 0 1],[0 1 1],cs); % define component with directions
@@ -363,7 +406,10 @@ for strip_index = 0:num_strips-1
     
     ori_strip = ebsd_cutmap('Ti-Hex').orientations
     outputFileName = strcat(analysis_path,sample_name,'_PF_strip_',num2str(strip_index))
-    pole_figure_plot(phase, ori_strip, CS, contour_step, pf_max, outputFileName, visible);
+    [maxval] = pole_figure_plot(phase, ori_strip, CS, contour_step, pf_max, outputFileName, visible);
+    PF_basal_max(strip_index+1) = maxval(1);
+    PF_prismatic1_max(strip_index+1) = maxval(2);
+    PF_prismatic2_max(strip_index+1) = maxval(3);
     
     outputFileName = strcat(analysis_path,sample_name,'_ODF_strip_',num2str(strip_index))
     psi=calcKernel(ori_strip);
@@ -382,7 +428,9 @@ for strip_index = 0:num_strips-1
     misorientation_ODF_max = angle(mori)/degree
 
     % calculate PHI angle of ODF maxima
-    PHI=ori_strip_max.Phi
+    phi1 = ori_strip_max.phi1
+    PHI = ori_strip_max.Phi
+    phi2 = ori_strip_max.phi2
     
     % seperate the texture components and calculate the volume fractions
     total_volume = length(ebsd_cutmap) % calculate the total volume as the number of points in the map
@@ -397,16 +445,26 @@ for strip_index = 0:num_strips-1
     tilted_ND_volume = length(ebsd_tilted_ND);
     tilted_ND_volume_fraction(strip_index+1) = (tilted_ND_volume/total_volume)
     
+    % seperate a texture component and calculate the volume fraction
+    ebsd_basal_TD = ebsd_cutmap('Ti-Hex').findByOrientation(basal_TD, misorientation*degree);
+    basal_TD_volume = length(ebsd_basal_TD);
+    basal_TD_volume_fraction(strip_index+1) = (basal_TD_volume/total_volume)
+    
+    % seperate a texture component and calculate the volume fraction
+    ebsd_basal_RD = ebsd_cutmap('Ti-Hex').findByOrientation(basal_RD, misorientation*degree);
+    basal_RD_volume = length(ebsd_basal_RD);
+    basal_RD_volume_fraction(strip_index+1) = (basal_RD_volume/total_volume)
+    
 end
 
 %% Open and write to file to save the different texture strength values
 
 fileTS = fopen(fullfile(analysis_path, strcat(sample_name,'_texture_strength_',num2str(num_strips),'.txt')),'w');
-fprintf(fileTS, 'Strip Index\tTexture Index\tODF Max\tPHI Angle of ODF Max.\tMisorientation of ODF Max.\tBasal ND Volume Fraction\tTilted ND Volume Fraction\n');
+fprintf(fileTS, 'Strip Index \t Texture Index \t ODF Max \t Misorientation of ODF Max \t phi1 Angle of ODF Max \t PHI Angle of ODF Max \t phi2 Angle of ODF Max \t {0002} PF Max \t {10-10} PF Max \t {11-20} PF Max \t Basal ND Volume Fraction\t Tilted ND Volume Fraction \t Basal TD Volume Fraction \t Basal RD Volume Fraction \n');
 
 for strip_index = 0:num_strips-1    
     % write the texture strength values to file
-    fprintf(fileTS, '%f\t%f\t%f\t%f\t%f\t%f\t%f\n', strip_index, TEXTURE_INDEX_strip(strip_index+1), odf_strip_max(strip_index+1), PHI(strip_index+1), misorientation_ODF_max(strip_index+1), basal_ND_volume_fraction(strip_index+1), tilted_ND_volume_fraction(strip_index+1))
+    fprintf(fileTS, '%f\t%f\t%f\t%f\t%f\t%f\t%f%f\t%f\t%f\t%f\t%f\t%f\t%f\n', strip_index, TEXTURE_INDEX_strip(strip_index+1), odf_strip_max(strip_index+1), misorientation_ODF_max(strip_index+1), rad2deg(phi1(strip_index+1)), rad2deg(PHI(strip_index+1)), rad2deg(phi2(strip_index+1)), PF_basal_max(strip_index+1), PF_prismatic1_max(strip_index+1), PF_prismatic2_max(strip_index+1), basal_ND_volume_fraction(strip_index+1), tilted_ND_volume_fraction(strip_index+1), basal_TD_volume_fraction(strip_index+1), basal_RD_volume_fraction(strip_index+1))
 end
 
 % close any open files
@@ -414,37 +472,76 @@ fclose(fileTS);
 
 %% Plot the texture variation
 
-strip_index = 1:num_strips
+strip_index = 0:num_strips-1
 
-vol_frac_line_figure = figure();
+TEXTURE_INDEX_figure = figure();
 hold on
-plot(strip_index,basal_ND_volume_fraction*100,'Color',[1,0,0],'lineWidth',2) % red);
+plot(strip_index+1,TEXTURE_INDEX_square,'Color',[1,0,0],'lineWidth',2) % red;
 xlabel('Slice Number')
-ylabel('Volume Fraction (%)')
-hold on
-plot(strip_index,tilted_ND_volume_fraction*100,'Color',[0,1,0],'lineWidth',2) % green);
+ylabel('Texture Index')
 hold off
-legend('Basal ND','Tilted ND')
-saveas (vol_frac_line_figure, strcat(analysis_path,sample_name,'_vol_frac_line_plot_',num2str(num_strips), '.png'));
- 
-text_ind_line_figure = figure();
-hold on
-plot(strip_index,TEXTURE_INDEX_strip,'Color',[1,0,0],'lineWidth',2) % red);
-xlabel('Slice Number')
-ylabel('Texture Index or ODF Max')
-hold on
-plot(strip_index,odf_strip_max,'Color',[0,1,0],'lineWidth',2) % green);
-hold off
-legend('Texture Index','ODF Maximum')
-saveas (text_ind_line_figure, strcat(analysis_path,sample_name,'_texture_index_line_plot_',num2str(num_strips), '.png'));
+legend('Texture Index')
+saveas (TEXTURE_INDEX_figure, strcat(analysis_path,sample_name,'_TI_line_plot_',num2str(num_squares), '.png'));
 
-text_ODF_ori_figure = figure();
+odf_max_figure = figure();
 hold on
-plot(strip_index, PHI,'Color',[0,0,1],'lineWidth',2); % blue
+plot(strip_index+1,odf_square_max,'Color',[1,0,0],'lineWidth',2) % red;
 xlabel('Slice Number')
-ylabel('PHI Angle or Misorientation')
-hold on
-plot(strip_index, misorientation_ODF_max,'Color',[0,1,0],'lineWidth',2); % green
-legend('PHI Angle of ODF Max.','Misorientation of ODF Max.')
+ylabel('ODF Maximum')
 hold off
-saveas (text_ODF_ori_figure, strcat(analysis_path,sample_name,'_texture_ODF_orientation_plot_',num2str(num_strips), '.png'));
+legend('ODF Maximum')
+saveas (odf_max_figure, strcat(analysis_path,sample_name,'_odf_max_line_plot_',num2str(num_squares), '.png'));
+
+phi1_figure = figure();
+hold on
+plot(strip_index+1,rad2deg(phi1),'Color',[1,0,0],'lineWidth',2) % red;
+xlabel('Slice Number')
+ylabel('Phi1 Angle')
+hold off
+legend('Phi1 Angle')
+saveas (phi1_figure, strcat(analysis_path,sample_name,'_phi1_line_plot_',num2str(num_squares), '.png'));
+
+PHI_figure = figure();
+hold on
+plot(strip_index+1,rad2deg(PHI),'Color',[1,0,0],'lineWidth',2) % red;
+xlabel('Slice Number')
+ylabel('PHI Angle')
+hold off
+legend('PHI Angle')
+saveas (PHI_figure, strcat(analysis_path,sample_name,'_PHI_line_plot_',num2str(num_squares), '.png'));
+
+phi2_figure = figure();
+hold on
+plot(strip_index+1,rad2deg(phi2),'Color',[1,0,0],'lineWidth',2) % red;
+xlabel('Slice Number')
+ylabel('Phi2 Angle')
+hold off
+legend('Phi2 Angle')
+saveas (phi2_figure, strcat(analysis_path,sample_name,'_phi2_line_plot_',num2str(num_squares), '.png'));
+
+PF_basal_figure = figure();
+hold on
+plot(strip_index+1,PF_basal_max,'Color',[1,0,0],'lineWidth',2) % red;
+xlabel('Slice Number')
+ylabel('{0002} Pole Figure Max.')
+hold off
+legend('{0002} Pole Figure Max.')
+saveas (PF_basal_figure, strcat(analysis_path,sample_name,'_PF_basal_line_plot_',num2str(num_squares), '.png'));
+
+PF_prismatic1_figure = figure();
+hold on
+plot(strip_index+1,PF_prismatic1_max,'Color',[1,0,0],'lineWidth',2) % red;
+xlabel('Slice Number')
+ylabel('{10-10} Pole Figure Max.')
+hold off
+legend('{10-10} Pole Figure Max.')
+saveas (PF_prismatic1_figure, strcat(analysis_path,sample_name,'_PF_prismatic1_line_plot_',num2str(num_squares), '.png'));
+
+PF_prismatic2_figure = figure();
+hold on
+plot(strip_index+1,PF_prismatic2_max,'Color',[1,0,0],'lineWidth',2) % red;
+xlabel('Slice Number')
+ylabel('{11-20} Pole Figure Max.')
+hold off
+legend('{11-20} Pole Figure Max.')
+saveas (PF_prismatic2_figure, strcat(analysis_path,sample_name,'_PF_prismatic2_line_plot_',num2str(num_squares), '.png'));

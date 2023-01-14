@@ -24,7 +24,8 @@ function [  ] = IPF_map_plot(phase, ebsd, outputFileName, visible);
     plot(ebsd('Ti-Hex'),color);
     hold off
     saveas (IPF_map, outputFileName, 'png');
-
+    close(IPF_map);
+    
   elseif strcmp(phase, 'beta');
     IPF_map = figure();
     plot(ebsd);
@@ -35,6 +36,7 @@ function [  ] = IPF_map_plot(phase, ebsd, outputFileName, visible);
     plot(ebsd('Titanium Cubic'),color);
     hold off
     saveas (IPF_map, outputFileName, 'png');
+    close(IPF_map);
     
   else 
     disp ('Phase not recognised for plotting IPF map.');
